@@ -15,10 +15,7 @@ if ( ! function_exists( 'atlas_location_status_classes' ) ) {
         switch ( $status ) {
             case 'active':
                 return 'bg-green-100 text-green-800';
-            case 'provisional':
-                return 'bg-yellow-100 text-yellow-800';
             case 'inactive':
-            case 'archived':
                 return 'bg-gray-200 text-gray-700';
             default:
                 return 'bg-blue-100 text-blue-800';
@@ -52,18 +49,14 @@ if ( ! function_exists( 'atlas_location_priority_classes' ) ) {
 
 if ( ! function_exists( 'atlas_location_default_text' ) ) {
     /**
-     * Return a formatted string or a placeholder dash when empty.
+     * Return sanitized text or a fallback dash.
      *
-     * @param string $value Value to display.
+     * @param string $value Value to format.
      *
      * @return string
      */
     function atlas_location_default_text( $value ) {
-        if ( '' === $value || null === $value ) {
-            return '-';
-        }
-
-        return esc_html( $value );
+        return $value ? esc_html( $value ) : '-';
     }
 }
 ?>
@@ -107,11 +100,11 @@ if ( ! function_exists( 'atlas_location_default_text' ) ) {
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Location', 'jointswp' ); ?></th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Code', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Region', 'jointswp' ); ?></th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Country', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Status', 'jointswp' ); ?></th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Priority', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Venues', 'jointswp' ); ?></th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Last Course', 'jointswp' ); ?></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -120,37 +113,35 @@ if ( ! function_exists( 'atlas_location_default_text' ) ) {
                             while ( have_posts() ) :
                                 the_post();
 
-                                $region           = get_post_meta( get_the_ID(), 'location_region', true );
-                                $country          = get_post_meta( get_the_ID(), 'location_country', true );
-                                $status           = get_post_meta( get_the_ID(), 'location_status', true );
-                                $priority         = get_post_meta( get_the_ID(), 'location_priority', true );
-                                $venues_available = get_post_meta( get_the_ID(), 'location_venues_count', true );
-                                $last_course      = get_post_meta( get_the_ID(), 'location_last_course_date', true );
+                                $location_code    = get_post_meta( get_the_ID(), 'location_code', true );
+                                $location_region  = get_post_meta( get_the_ID(), 'location_region', true );
+                                $location_status  = get_post_meta( get_the_ID(), 'location_status', true );
+                                $location_priority = get_post_meta( get_the_ID(), 'location_priority', true );
+                                $venues_count     = get_post_meta( get_the_ID(), 'location_venues_count', true );
 
-                                $status_label   = $status ? $status : __( 'Active', 'jointswp' );
-                                $last_course    = $last_course ? $last_course : get_the_date( 'Y-m-d' );
-                                $venues_display = $venues_available || '0' === $venues_available ? esc_html( $venues_available ) : '-';
+                                $status_label   = $location_status ? $location_status : __( 'Active', 'jointswp' );
+                                $priority_label = $location_priority ? $location_priority : __( 'Medium', 'jointswp' );
+                                $region_label   = $location_region ? $location_region : __( '-', 'jointswp' );
+                                $code_label     = $location_code ? $location_code : __( '-', 'jointswp' );
+                                $venues_label   = '' === $venues_count ? '-' : $venues_count;
                                 ?>
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        <div class="flex items-center space-x-2">
-                                            <a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800"><?php the_title(); ?></a>
-                                            <?php if ( $priority ) : ?>
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo esc_attr( atlas_location_priority_classes( $priority ) ); ?>">
-                                                    <?php echo esc_html( $priority ); ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </div>
+                                        <a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800"><?php the_title(); ?></a>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_location_default_text( $region ); ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_location_default_text( $country ); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_location_default_text( $code_label ); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_location_default_text( $region_label ); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo esc_attr( atlas_location_status_classes( $status_label ) ); ?>">
                                             <?php echo esc_html( $status_label ); ?>
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $venues_display; ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_location_default_text( $last_course ); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo esc_attr( atlas_location_priority_classes( $priority_label ) ); ?>">
+                                            <?php echo esc_html( $priority_label ); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_location_default_text( $venues_label ); ?></td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else : ?>
