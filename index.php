@@ -160,19 +160,19 @@ get_header();
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <!-- Courses Card -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                        <i data-feather="calendar" class="w-6 h-6"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Upcoming Courses</p>
-                        <p class="text-2xl font-semibold text-gray-900"><?php echo esc_html( $courses_count ); ?></p>
-                    </div>
+            <a href="<?php echo esc_url( $dashboard_links['courses'] ); ?>" class="flex items-center group">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i data-feather="calendar" class="w-6 h-6"></i>
                 </div>
-                <div class="mt-4">
-                    <a href="<?php echo esc_url( $dashboard_links['courses'] ); ?>" class="text-sm font-medium text-blue-600 hover:text-blue-800">View all courses →</a>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-blue-700">Upcoming Courses</p>
+                    <p class="text-2xl font-semibold text-gray-900"><?php echo esc_html( $courses_count ); ?></p>
                 </div>
+            </a>
+            <div class="mt-4">
+                <a href="<?php echo esc_url( $dashboard_links['courses'] ); ?>" class="text-sm font-medium text-blue-600 hover:text-blue-800">View all courses →</a>
             </div>
+        </div>
 
             <!-- Venues Card -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -245,9 +245,11 @@ get_header();
         <!-- Upcoming Courses -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-lg font-medium text-gray-800 flex items-center">
-                    <i data-feather="calendar" class="w-4 h-4 mr-2 text-blue-600"></i>
-                    Upcoming Courses (Next 30 Days)
+                <h2 class="text-lg font-medium text-gray-800">
+                    <a href="<?php echo esc_url( $dashboard_links['courses'] ); ?>" class="flex items-center hover:text-blue-700">
+                        <i data-feather="calendar" class="w-4 h-4 mr-2 text-blue-600"></i>
+                        Upcoming Courses (Next 30 Days)
+                    </a>
                 </h2>
             </div>
             <div class="overflow-x-auto">
