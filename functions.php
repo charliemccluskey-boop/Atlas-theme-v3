@@ -47,10 +47,21 @@ require_once(get_template_directory().'/functions/translation/translation.php');
 // require_once(get_template_directory().'/functions/admin.php'); 
 
 // Add external scripts directly to the head output
-function joints_add_external_head_scripts() {
-    ?>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <?php
+function joints_enqueue_external_head_scripts() {
+    wp_enqueue_script(
+        'tailwind-cdn',
+        'https://cdn.tailwindcss.com',
+        array(),
+        null,
+        false
+    );
+
+    wp_enqueue_script(
+        'feather-icons',
+        'https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js',
+        array(),
+        null,
+        false
+    );
 }
-add_action('wp_head', 'joints_add_external_head_scripts');
+add_action('wp_enqueue_scripts', 'joints_enqueue_external_head_scripts');
