@@ -59,7 +59,11 @@ if ( ! function_exists( 'atlas_location_default_text' ) ) {
      * @return string
      */
     function atlas_location_default_text( $value ) {
-        return $value ? esc_html( $value ) : '-';
+        if ( '' === $value || null === $value ) {
+            return '-';
+        }
+
+        return esc_html( $value );
     }
 }
 ?>
@@ -123,8 +127,8 @@ if ( ! function_exists( 'atlas_location_default_text' ) ) {
                                 $venues_available = get_post_meta( get_the_ID(), 'location_venues_count', true );
                                 $last_course      = get_post_meta( get_the_ID(), 'location_last_course_date', true );
 
-                                $status_label  = $status ? $status : __( 'Active', 'jointswp' );
-                                $last_course   = $last_course ? $last_course : get_the_date( 'Y-m-d' );
+                                $status_label   = $status ? $status : __( 'Active', 'jointswp' );
+                                $last_course    = $last_course ? $last_course : get_the_date( 'Y-m-d' );
                                 $venues_display = $venues_available || '0' === $venues_available ? esc_html( $venues_available ) : '-';
                                 ?>
                                 <tr class="hover:bg-gray-50">
