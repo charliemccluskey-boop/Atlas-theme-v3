@@ -45,3 +45,12 @@ require_once(get_template_directory().'/functions/translation/translation.php');
 
 // Customize the WordPress admin
 // require_once(get_template_directory().'/functions/admin.php'); 
+
+// Add external scripts directly to the head output
+function joints_add_external_head_scripts() {
+    ?>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <?php
+}
+add_action('wp_head', 'joints_add_external_head_scripts');
