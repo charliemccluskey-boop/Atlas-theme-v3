@@ -35,8 +35,44 @@ if ( ! function_exists( 'atlas_dashboard_archive_link' ) ) {
 	}
 }
 
+// Helper to count upcoming courses based on the course_date meta value.
+if ( ! function_exists( 'atlas_dashboard_upcoming_courses_count' ) ) {
+	function atlas_dashboard_upcoming_courses_count( $post_type ) {
+		if ( ! $post_type || ! post_type_exists( $post_type ) ) {
+			return 0;
+		}
+
+		// If we're not working with training courses, fall back to the published count.
+		if ( 'training_course' !== $post_type ) {
+			return atlas_dashboard_count( $post_type );
+		}
+
+		$today = current_time( 'Y-m-d' );
+
+		$upcoming_query = new WP_Query(
+			array(
+				'post_type'      => $post_type,
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'no_found_rows'  => false,
+				'meta_query'     => array(
+					array(
+						'key'     => 'course_date',
+						'value'   => $today,
+						'compare' => '>=',
+						'type'    => 'DATE',
+					),
+				),
+			)
+		);
+
+		return (int) $upcoming_query->found_posts;
+	}
+}
+
 $course_post_type = post_type_exists( 'training_course' ) ? 'training_course' : 'post';
-$courses_count    = atlas_dashboard_count( $course_post_type );
+$courses_count    = atlas_dashboard_upcoming_courses_count( $course_post_type );
 $venues_count     = atlas_dashboard_count( 'training_venue' );
 $locations_count  = atlas_dashboard_count( 'training_location' );
 $companies_count  = atlas_dashboard_count( 'company' );
