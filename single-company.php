@@ -121,7 +121,7 @@ get_header();
                                 <dt class="text-sm font-medium text-gray-500">Website</dt>
                                 <dd class="mt-1 text-sm text-gray-900">
                                     <?php if ( $company_website ) : ?>
-                                        <a href="<?php echo esc_url( $company_website ); ?>" class="text-blue-600 hover:text-blue-800">
+                                        <a href="<?php echo esc_url( $company_website ); ?>" class="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">
                                             <?php echo esc_html( wp_parse_url( $company_website, PHP_URL_HOST ) ?: $company_website ); ?>
                                         </a>
                                     <?php else : ?>
