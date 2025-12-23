@@ -52,8 +52,8 @@ if ( ! function_exists( 'atlas_dashboard_upcoming_courses_count' ) ) {
 			return 0;
 		}
 
-		// If we're not working with training courses, fall back to the published count.
-		if ( 'training_course' !== $post_type ) {
+		// If we're not working with courses, fall back to the published count.
+		if ( ! in_array( $post_type, array( 'training_course', 'course' ), true ) ) {
 			return atlas_dashboard_count( $post_type );
 		}
 
@@ -81,7 +81,7 @@ if ( ! function_exists( 'atlas_dashboard_upcoming_courses_count' ) ) {
 	}
 }
 
-$course_post_type = post_type_exists( 'training_course' ) ? 'training_course' : 'post';
+$course_post_type = post_type_exists( 'course' ) ? 'course' : ( post_type_exists( 'training_course' ) ? 'training_course' : 'post' );
 $courses_count    = atlas_dashboard_upcoming_courses_count( $course_post_type );
 $venues_count     = atlas_dashboard_count( 'training_venue' );
 $locations_count  = atlas_dashboard_count( 'training_location' );
