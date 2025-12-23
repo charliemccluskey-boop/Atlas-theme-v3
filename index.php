@@ -25,6 +25,16 @@ if ( ! function_exists( 'atlas_dashboard_archive_link' ) ) {
 			if ( $archive_link ) {
 				return $archive_link;
 			}
+
+			$admin_link = admin_url( 'edit.php' );
+
+			if ( 'post' !== $post_type ) {
+				$admin_link = add_query_arg( 'post_type', $post_type, $admin_link );
+			}
+
+			if ( $admin_link ) {
+				return $admin_link;
+			}
 		}
 
 		if ( $fallback ) {
@@ -78,7 +88,7 @@ $locations_count  = atlas_dashboard_count( 'training_location' );
 $companies_count  = atlas_dashboard_count( 'company' );
 
 $dashboard_links = array(
-	'courses'   => atlas_dashboard_archive_link( $course_post_type, get_permalink( get_option( 'page_for_posts' ) ) ?: home_url( '/' ) ),
+	'courses'   => atlas_dashboard_archive_link( $course_post_type, admin_url( 'edit.php' . ( 'post' !== $course_post_type ? '?post_type=' . $course_post_type : '' ) ) ),
 	'venues'    => atlas_dashboard_archive_link( 'training_venue' ),
 	'locations' => atlas_dashboard_archive_link( 'training_location' ),
 	'companies' => atlas_dashboard_archive_link( 'company' ),
