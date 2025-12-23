@@ -2,8 +2,10 @@
 get_header();
 
 $plan_labels = array(
-	'plan_a' => 'Plan A',
-	'plan_b' => 'Plan B',
+	'preferred' => 'Preferred',
+	'alternate' => 'Alternate',
+	'plan_a'   => 'Plan A',
+	'plan_b'   => 'Plan B',
 );
 
 $status_styles = array(
