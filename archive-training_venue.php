@@ -38,6 +38,17 @@ if ( ! function_exists( 'atlas_venue_linked_text' ) ) {
 			return '-';
 		}
 
+		if ( $value instanceof WP_Post ) {
+			$label = get_the_title( $value );
+			$url   = get_permalink( $value );
+
+			return sprintf(
+				'<a href="%1$s" class="text-blue-600 hover:text-blue-800">%2$s</a>',
+				esc_url( $url ),
+				esc_html( $label )
+			);
+		}
+
 		$label = is_numeric( $value ) ? get_the_title( (int) $value ) : (string) $value;
 		$url   = is_numeric( $value ) ? get_permalink( (int) $value ) : '';
 
@@ -50,6 +61,32 @@ if ( ! function_exists( 'atlas_venue_linked_text' ) ) {
 		}
 
 		return esc_html( $label );
+	}
+}
+
+if ( ! function_exists( 'atlas_venue_linked_list' ) ) {
+	/**
+	 * Display a comma-separated list of linked values.
+	 *
+	 * @param array|WP_Post|int|string $values Values to render.
+	 *
+	 * @return string
+	 */
+	function atlas_venue_linked_list( $values ) {
+		if ( ! $values ) {
+			return '-';
+		}
+
+		if ( ! is_array( $values ) ) {
+			return atlas_venue_linked_text( $values );
+		}
+
+		$links = array();
+		foreach ( $values as $value ) {
+			$links[] = atlas_venue_linked_text( $value );
+		}
+
+		return implode( ', ', array_filter( $links ) );
 	}
 }
 
@@ -143,10 +180,10 @@ if ( ! function_exists( 'atlas_venue_default_text' ) ) {
 							while ( have_posts() ) :
 								the_post();
 
-								$venue_location  = get_post_meta( get_the_ID(), 'venue_location', true );
-								$venue_company   = get_post_meta( get_the_ID(), 'venue_company', true );
+								$venue_location  = get_field( 'linked_location' );
+								$venue_company   = get_field( 'venue_companies' );
 								$venue_status    = get_post_meta( get_the_ID(), 'venue_status', true );
-								$venue_parking   = get_post_meta( get_the_ID(), 'venue_parking', true );
+								$venue_parking   = get_field( 'atlas_free_parking_adjacent' );
 								$venue_last_used = get_post_meta( get_the_ID(), 'venue_last_used', true );
 
 								$status_label    = $venue_status ? $venue_status : __( 'Confirmed', 'jointswp' );
@@ -157,7 +194,7 @@ if ( ! function_exists( 'atlas_venue_default_text' ) ) {
 										<a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800"><?php the_title(); ?></a>
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_venue_linked_text( $venue_location ); ?></td>
-									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_venue_linked_text( $venue_company ); ?></td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_venue_linked_list( $venue_company ); ?></td>
 									<td class="px-6 py-4 whitespace-nowrap">
 										<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo esc_attr( atlas_venue_status_classes( $status_label ) ); ?>">
 											<?php echo esc_html( $status_label ); ?>
