@@ -19,10 +19,39 @@ if ( ! function_exists( 'atlas_course_status_classes' ) ) {
                 return 'bg-blue-100 text-blue-800';
             case 'completed':
                 return 'bg-purple-100 text-purple-800';
+            case 'cancelled':
+                return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
     }
+}
+
+if ( ! function_exists( 'atlas_course_get_post_from_value' ) ) {
+	/**
+	 * Safely resolve a relationship value to a WP_Post object.
+	 *
+	 * @param mixed $value Post object, ID, or array from ACF.
+	 *
+	 * @return WP_Post|null
+	 */
+	function atlas_course_get_post_from_value( $value ) {
+		if ( $value instanceof WP_Post ) {
+			return $value;
+		}
+
+		if ( is_array( $value ) && ! empty( $value ) ) {
+			return atlas_course_get_post_from_value( reset( $value ) );
+		}
+
+		if ( is_numeric( $value ) ) {
+			$post = get_post( (int) $value );
+
+			return $post instanceof WP_Post ? $post : null;
+		}
+
+		return null;
+	}
 }
 
 if ( ! function_exists( 'atlas_course_format_currency' ) ) {
@@ -50,7 +79,7 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
     /**
      * Display a linked value if a matching post ID exists, otherwise plain text.
      *
-     * @param string|int $value
+     * @param string|int|WP_Post|array $value
      *
      * @return string
      */
@@ -59,8 +88,18 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
             return '-';
         }
 
-        $label = is_numeric( $value ) ? get_the_title( (int) $value ) : (string) $value;
-        $url   = is_numeric( $value ) ? get_permalink( (int) $value ) : '';
+        $post = atlas_course_get_post_from_value( $value );
+
+        if ( $post instanceof WP_Post ) {
+            return sprintf(
+                '<a href="%1$s" class="text-blue-600 hover:text-blue-800">%2$s</a>',
+                esc_url( get_permalink( $post ) ),
+                esc_html( get_the_title( $post ) )
+            );
+        }
+
+        $label = is_string( $value ) ? $value : '';
+        $url   = '';
 
         if ( $url ) {
             return sprintf(
@@ -94,7 +133,7 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
                     <h1 class="text-3xl font-bold text-gray-800"><?php esc_html_e( 'Courses', 'jointswp' ); ?></h1>
                     <p class="text-gray-600 mt-2"><?php esc_html_e( 'View and manage all training courses', 'jointswp' ); ?></p>
                 </div>
-                <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=training_course' ) ); ?>" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=course' ) ); ?>" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                     <i data-feather="plus" class="w-4 h-4 mr-2"></i>
                     <?php esc_html_e( 'Add New Course', 'jointswp' ); ?>
                 </a>
@@ -118,7 +157,7 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Venue', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Location', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Attendees', 'jointswp' ); ?></th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Expenses', 'jointswp' ); ?></th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Total Cost', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Revenue', 'jointswp' ); ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?php esc_html_e( 'Profit', 'jointswp' ); ?></th>
                         </tr>
@@ -129,18 +168,23 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
                             while ( have_posts() ) :
                                 the_post();
 
-                                $course_date     = get_post_meta( get_the_ID(), 'course_date', true );
-                                $course_status   = get_post_meta( get_the_ID(), 'course_status', true );
-                                $course_venue    = get_post_meta( get_the_ID(), 'course_venue', true );
-                                $course_location = get_post_meta( get_the_ID(), 'course_location', true );
-                                $attendees       = get_post_meta( get_the_ID(), 'course_attendees', true );
-                                $expenses        = get_post_meta( get_the_ID(), 'course_expenses', true );
-                                $revenue         = get_post_meta( get_the_ID(), 'course_revenue', true );
-                                $profit          = get_post_meta( get_the_ID(), 'course_profit', true );
+                                $course_core        = function_exists( 'get_field' ) ? get_field( 'course_core' ) : array();
+                                $course_venue_group = function_exists( 'get_field' ) ? get_field( 'course_venue' ) : array();
+                                $course_financials  = function_exists( 'get_field' ) ? get_field( 'course_financials' ) : array();
 
-                                $course_date   = $course_date ? $course_date : get_the_date( 'Y-m-d' );
-                                $status_label  = $course_status ? $course_status : __( 'Scheduled', 'jointswp' );
-                                $profit_amount = $profit;
+                                $course_date_value = isset( $course_core['course_date'] ) ? $course_core['course_date'] : get_post_meta( get_the_ID(), 'course_date', true );
+                                $course_status     = isset( $course_core['course_status'] ) ? $course_core['course_status'] : get_post_meta( get_the_ID(), 'course_status', true );
+                                $course_venue_val  = isset( $course_venue_group['course_venue'] ) ? $course_venue_group['course_venue'] : get_post_meta( get_the_ID(), 'course_venue', true );
+                                $attendees         = function_exists( 'get_field' ) ? get_field( 'course_attendees' ) : get_post_meta( get_the_ID(), 'course_attendees', true );
+                                $expenses          = isset( $course_financials['total_course_cost'] ) ? $course_financials['total_course_cost'] : get_post_meta( get_the_ID(), 'course_expenses', true );
+                                $revenue           = isset( $course_financials['course_revenue'] ) ? $course_financials['course_revenue'] : get_post_meta( get_the_ID(), 'course_revenue', true );
+                                $profit            = get_post_meta( get_the_ID(), 'course_profit', true );
+
+                                $course_date    = $course_date_value ? $course_date_value : get_the_date( 'Y-m-d' );
+                                $status_label   = $course_status ? ucfirst( $course_status ) : __( 'Scheduled', 'jointswp' );
+                                $profit_amount  = $profit;
+                                $course_venue   = atlas_course_get_post_from_value( $course_venue_val );
+                                $course_location = $course_venue ? atlas_course_get_post_from_value( function_exists( 'get_field' ) ? get_field( 'linked_location', $course_venue->ID ) : get_post_meta( $course_venue->ID, 'linked_location', true ) ) : null;
 
                                 if ( '' === $profit_amount && is_numeric( $revenue ) && is_numeric( $expenses ) ) {
                                     $profit_amount = (float) $revenue - (float) $expenses;
@@ -157,7 +201,7 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_course_linked_text( $course_venue ); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_course_linked_text( $course_location ); ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $attendees ? esc_html( $attendees ) : '-'; ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo '' !== $attendees && null !== $attendees ? esc_html( $attendees ) : '-'; ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_course_format_currency( $expenses ); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_course_format_currency( $revenue ); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"><?php echo atlas_course_format_currency( $profit_amount ); ?></td>
