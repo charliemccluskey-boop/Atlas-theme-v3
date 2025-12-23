@@ -57,7 +57,18 @@ if ( ! function_exists( 'atlas_dashboard_upcoming_courses_count' ) ) {
 			return atlas_dashboard_count( $post_type );
 		}
 
-		$today = current_time( 'Y-m-d' );
+		$today      = current_time( 'Y-m-d' );
+		$date_keys  = array( 'course_date', 'course_core_course_date' );
+		$meta_query = array( 'relation' => 'OR' );
+
+		foreach ( $date_keys as $date_key ) {
+			$meta_query[] = array(
+				'key'     => $date_key,
+				'value'   => $today,
+				'compare' => '>=',
+				'type'    => 'DATE',
+			);
+		}
 
 		$upcoming_query = new WP_Query(
 			array(
@@ -66,14 +77,7 @@ if ( ! function_exists( 'atlas_dashboard_upcoming_courses_count' ) ) {
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
 				'no_found_rows'  => false,
-				'meta_query'     => array(
-					array(
-						'key'     => 'course_date',
-						'value'   => $today,
-						'compare' => '>=',
-						'type'    => 'DATE',
-					),
-				),
+				'meta_query'     => $meta_query,
 			)
 		);
 
