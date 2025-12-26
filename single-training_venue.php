@@ -92,6 +92,13 @@ if ( ! function_exists( 'atlas_bool_display' ) ) {
 		$deposit_amount      = get_field( 'deposit_amount' );
 		$deposit_due_rule    = get_field( 'deposit_due_rule' );
 		$deposit_days_before = get_field( 'deposit_days_before' );
+		$total_room_rate     = get_field( 'total_room_rate' );
+		$final_payment_amount = null;
+
+		if ( $total_room_rate !== '' && null !== $total_room_rate ) {
+			$deposit_value        = $deposit_amount !== '' && null !== $deposit_amount ? (float) $deposit_amount : 0;
+			$final_payment_amount = (float) $total_room_rate - $deposit_value;
+		}
 		$payment_due_rule    = get_field( 'payment_due_rule' );
 		$payment_days_before = get_field( 'payment_days_before' );
 		$payment_methods     = get_field( 'payment_methods_allowed' );
@@ -251,6 +258,12 @@ if ( ! function_exists( 'atlas_bool_display' ) ) {
 						<div class="px-6 py-4">
 							<dl class="grid grid-cols-2 gap-x-4 gap-y-3">
 								<div class="sm:col-span-1">
+									<dt class="text-sm font-medium text-gray-500">Total Room Rate (£)</dt>
+									<dd class="mt-1 text-sm text-gray-900">
+										<?php echo $total_room_rate !== '' && null !== $total_room_rate ? esc_html( $total_room_rate ) : '—'; ?>
+									</dd>
+								</div>
+								<div class="sm:col-span-1">
 									<dt class="text-sm font-medium text-gray-500">Deposit Required?</dt>
 									<dd class="mt-1 text-sm text-gray-900">
 										<?php echo $deposit_required ? 'Yes' : 'No'; ?>
@@ -272,6 +285,18 @@ if ( ! function_exists( 'atlas_bool_display' ) ) {
 									<dt class="text-sm font-medium text-gray-500">Deposit – Days Before Course</dt>
 									<dd class="mt-1 text-sm text-gray-900">
 										<?php echo $deposit_due_rule === 'days_before' && $deposit_days_before !== '' ? esc_html( $deposit_days_before ) : '—'; ?>
+									</dd>
+								</div>
+								<div class="sm:col-span-2 pt-2 border-t border-gray-200">
+									<h3 class="text-sm font-semibold text-gray-700 flex items-center">
+										<i data-feather="check-circle" class="w-4 h-4 mr-2 text-blue-600"></i>
+										Final Payment
+									</h3>
+								</div>
+								<div class="sm:col-span-1">
+									<dt class="text-sm font-medium text-gray-500">Final Payment Amount (£)</dt>
+									<dd class="mt-1 text-sm text-gray-900">
+										<?php echo null !== $final_payment_amount ? esc_html( $final_payment_amount ) : '—'; ?>
 									</dd>
 								</div>
 								<div class="sm:col-span-1">
