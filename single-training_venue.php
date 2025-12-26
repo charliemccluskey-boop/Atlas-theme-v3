@@ -8,6 +8,8 @@ $plan_labels = array(
 	'plan_b'   => 'Plan B',
 );
 
+$plan_type_field_key = 'venue_plan_type';
+
 $status_styles = array(
 	'identified'     => array( 'label' => 'Identified', 'class' => 'bg-yellow-100 text-yellow-800' ),
 	'contacted'      => array( 'label' => 'Contacted', 'class' => 'bg-blue-100 text-blue-800' ),
@@ -79,7 +81,19 @@ if ( ! function_exists( 'atlas_bool_display' ) ) {
 		the_post();
 
 		$linked_location   = get_field( 'linked_location' );
-		$plan_type         = get_field( 'plan_type' );
+		$plan_type         = get_field( $plan_type_field_key );
+		$plan_type_source  = get_the_ID();
+
+		if ( ! $plan_type ) {
+			$plan_type = get_field( 'plan_type' );
+		}
+
+		if ( ! $plan_type && $linked_location instanceof WP_Post ) {
+			$plan_type_source  = $linked_location->ID;
+			$plan_type         = get_field( $plan_type_field_key, $linked_location->ID );
+			$legacy_plan_field = ! $plan_type ? get_field( 'plan_type', $linked_location->ID ) : '';
+			$plan_type         = $plan_type ? $plan_type : $legacy_plan_field;
+		}
 		$venue_status      = get_field( 'venue_status' );
 		$venue_companies   = get_field( 'venue_companies' );
 
@@ -164,7 +178,21 @@ if ( ! function_exists( 'atlas_bool_display' ) ) {
 								<div class="sm:col-span-1">
 									<dt class="text-sm font-medium text-gray-500">Plan Type</dt>
 									<dd class="mt-1 text-sm text-gray-900">
-										<?php echo isset( $plan_labels[ $plan_type ] ) ? esc_html( $plan_labels[ $plan_type ] ) : '—'; ?>
+										<?php
+										$plan_type_label = '—';
+
+										if ( $plan_type ) {
+											if ( function_exists( 'atlas_child_choice_label' ) ) {
+												$plan_type_label = atlas_child_choice_label( $plan_type, $plan_type_field_key, $plan_type_source );
+											}
+
+											if ( ! $plan_type_label && isset( $plan_labels[ $plan_type ] ) ) {
+												$plan_type_label = $plan_labels[ $plan_type ];
+											}
+										}
+
+										echo $plan_type_label ? esc_html( $plan_type_label ) : '—';
+										?>
 									</dd>
 								</div>
 								<div class="sm:col-span-1">
