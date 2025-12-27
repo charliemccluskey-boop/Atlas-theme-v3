@@ -75,6 +75,35 @@ if ( ! function_exists( 'atlas_course_format_currency' ) ) {
 	}
 }
 
+if ( ! function_exists( 'atlas_course_format_date_display' ) ) {
+	/**
+	 * Format the course date into a human-readable display value.
+	 *
+	 * @param string|int|DateTimeInterface|null $value Raw date value.
+	 *
+	 * @return string
+	 */
+	function atlas_course_format_date_display( $value ) {
+		if ( ! $value ) {
+			return '-';
+		}
+
+		if ( $value instanceof DateTimeInterface ) {
+			$timestamp = $value->getTimestamp();
+		} elseif ( is_numeric( $value ) ) {
+			$timestamp = (int) $value;
+		} else {
+			$timestamp = strtotime( (string) $value );
+		}
+
+		if ( $timestamp ) {
+			return date_i18n( 'j M Y', $timestamp );
+		}
+
+		return (string) $value;
+	}
+}
+
 if ( ! function_exists( 'atlas_course_linked_text' ) ) {
 	/**
 	 * Display a linked value if a matching post ID exists, otherwise plain text.
@@ -139,7 +168,8 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
 		$profit_margin       = get_post_meta( get_the_ID(), 'course_profit_margin', true );
 		$course_venue        = atlas_course_get_post_from_value( $course_venue_value );
 		$course_location     = $course_venue ? atlas_course_get_post_from_value( function_exists( 'get_field' ) ? get_field( 'linked_location', $course_venue->ID ) : get_post_meta( $course_venue->ID, 'linked_location', true ) ) : null;
-		$course_date_display = $course_date ? $course_date : get_the_date( 'Y-m-d' );
+		$course_date_display_raw = $course_date ? $course_date : get_the_date( 'Y-m-d' );
+		$course_date_display     = atlas_course_format_date_display( $course_date_display_raw );
 		$course_status_label = $course_status ? ucfirst( $course_status ) : __( 'Scheduled', 'jointswp' );
 		$profit_amount       = $profit;
 		$attendees_total     = is_numeric( $attendees_count ) ? (int) $attendees_count : 0;
