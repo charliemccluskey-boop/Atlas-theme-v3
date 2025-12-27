@@ -2,23 +2,62 @@
 get_header();
 ?>
 
+<?php
+if ( ! function_exists( 'atlas_get_company_field' ) ) {
+    /**
+     * Retrieve a company field value with ACF support and post meta fallback.
+     *
+     * @param string   $meta_key Field/meta key.
+     * @param mixed    $default  Default value when no data is available.
+     * @param int|null $post_id  Post ID, defaults to current post.
+     *
+     * @return mixed
+     */
+    function atlas_get_company_field( $meta_key, $default = '', $post_id = null ) {
+        $post_id = $post_id ? $post_id : get_the_ID();
+
+        $value = null;
+
+        if ( function_exists( 'get_field' ) ) {
+            $value = get_field( $meta_key, $post_id );
+        }
+
+        if ( null === $value || '' === $value ) {
+            $meta_value = get_post_meta( $post_id, $meta_key, true );
+
+            if ( '' !== $meta_value || '0' === $meta_value ) {
+                $value = $meta_value;
+            }
+        }
+
+        if ( null === $value || '' === $value ) {
+            $value = $default;
+        }
+
+        return $value;
+    }
+}
+?>
+
 <?php if ( have_posts() ) : ?>
     <?php while ( have_posts() ) : the_post(); ?>
     <?php
-        $company_type_field = get_field_object( 'company_type' );
-        $company_type_value = get_field( 'company_type' );
-        $company_type_label = ( $company_type_value && isset( $company_type_field['choices'][ $company_type_value ] ) )
+        $company_type_field = function_exists( 'get_field_object' ) ? get_field_object( 'company_type' ) : null;
+        $company_type_value = $company_type_field && isset( $company_type_field['value'] )
+            ? $company_type_field['value']
+            : atlas_get_company_field( 'company_type' );
+        $company_type_label = ( $company_type_field && $company_type_value && isset( $company_type_field['choices'][ $company_type_value ] ) )
             ? $company_type_field['choices'][ $company_type_value ]
-            : __( 'Not specified', 'atlas-theme' );
+            : ( $company_type_value ? $company_type_value : __( 'Not specified', 'atlas-theme' ) );
 
-        $company_email   = get_field( 'company_email' );
-        $company_phone   = get_field( 'company_phone' );
-        $company_website = get_field( 'company_website' );
+        $company_email   = atlas_get_company_field( 'company_email' );
+        $company_phone   = atlas_get_company_field( 'company_phone' );
+        $company_website = atlas_get_company_field( 'company_website' );
 
-        $associated_venues = get_field( 'company_venues' );
-        $associated_venues = is_array( $associated_venues ) ? $associated_venues : [];
+        $associated_venues = atlas_get_company_field( 'company_venues', [] );
+        $associated_venues = is_array( $associated_venues ) ? $associated_venues : ( $associated_venues ? array( $associated_venues ) : [] );
 
-        $internal_notes = get_field( 'company_notes' );
+        $internal_notes = atlas_get_company_field( 'company_notes' );
 
         $company_status_object = get_post_status_object( get_post_status() );
         $company_status_label  = $company_status_object ? $company_status_object->label : __( 'Unknown', 'atlas-theme' );
