@@ -27,6 +27,29 @@ if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
 		}
 	}
 }
+
+if ( ! function_exists( 'atlas_contact_format_date' ) ) {
+	/**
+	 * Format a date string into DD MM YYYY.
+	 *
+	 * @param string $date_string Date string to format.
+	 *
+	 * @return string
+	 */
+	function atlas_contact_format_date( $date_string ) {
+		if ( ! $date_string ) {
+			return '';
+		}
+
+		$timestamp = strtotime( (string) $date_string );
+
+		if ( ! $timestamp ) {
+			return (string) $date_string;
+		}
+
+		return date_i18n( 'd m Y', $timestamp );
+	}
+}
 ?>
 
 <?php if ( have_posts() ) : ?>
@@ -177,7 +200,7 @@ if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
                                 <dd class="mt-1 text-sm text-gray-900">
 									<?php
 									$last_contact_display = $last_contact ? $last_contact : get_the_date( 'Y-m-d' );
-									echo esc_html( $last_contact_display );
+									echo esc_html( atlas_contact_format_date( $last_contact_display ) );
 									?>
 								</dd>
                             </div>
