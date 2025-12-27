@@ -68,6 +68,29 @@ if ( ! function_exists( 'atlas_contact_default_text' ) ) {
 		return $value ? esc_html( $value ) : '-';
 	}
 }
+
+if ( ! function_exists( 'atlas_contact_format_date' ) ) {
+	/**
+	 * Format a date string into DD MM YYYY.
+	 *
+	 * @param string $date_string Date string to format.
+	 *
+	 * @return string
+	 */
+	function atlas_contact_format_date( $date_string ) {
+		if ( ! $date_string ) {
+			return '';
+		}
+
+		$timestamp = strtotime( (string) $date_string );
+
+		if ( ! $timestamp ) {
+			return (string) $date_string;
+		}
+
+		return date_i18n( 'd m Y', $timestamp );
+	}
+}
 ?>
 
 <!DOCTYPE html>
@@ -131,6 +154,7 @@ if ( ! function_exists( 'atlas_contact_default_text' ) ) {
 								$status_label = $status ? $status : __( 'Active', 'jointswp' );
 								$company      = $company_id ? $company_id : $company_name;
 								$last_contact = $last_contact ? $last_contact : get_the_date( 'Y-m-d' );
+								$last_contact = atlas_contact_format_date( $last_contact );
 								?>
 								<tr class="hover:bg-gray-50">
 									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
