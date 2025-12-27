@@ -1,96 +1,5 @@
 <?php
 get_header();
-
-if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
-	/**
-	 * Map contact status labels to Tailwind badge classes.
-	 *
-	 * @param string $status Status label.
-	 *
-	 * @return string
-	 */
-	function atlas_contact_status_classes( $status ) {
-		$status = strtolower( (string) $status );
-
-		switch ( $status ) {
-			case 'active':
-				return 'bg-green-100 text-green-800';
-			case 'prospective':
-			case 'prospect':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'inactive':
-				return 'bg-gray-200 text-gray-700';
-			default:
-				return 'bg-blue-100 text-blue-800';
-		}
-	}
-}
-
-if ( ! function_exists( 'atlas_contact_linked_text' ) ) {
-	/**
-	 * Display a linked value if a matching post ID exists, otherwise plain text.
-	 *
-	 * @param string|int $value Value to display.
-	 *
-	 * @return string
-	 */
-	function atlas_contact_linked_text( $value ) {
-		if ( ! $value ) {
-			return '-';
-		}
-
-		if ( is_numeric( $value ) ) {
-			$label = get_the_title( (int) $value );
-			$url   = get_permalink( (int) $value );
-
-			if ( $url ) {
-				return sprintf(
-					'<a href="%1$s" class="text-blue-600 hover:text-blue-800">%2$s</a>',
-					esc_url( $url ),
-					esc_html( $label )
-				);
-			}
-		}
-
-		return esc_html( (string) $value );
-	}
-}
-
-if ( ! function_exists( 'atlas_contact_default_text' ) ) {
-	/**
-	 * Return a default dash when the value is empty.
-	 *
-	 * @param string $value Value to format.
-	 *
-	 * @return string
-	 */
-	function atlas_contact_default_text( $value ) {
-		return $value ? esc_html( $value ) : '-';
-	}
-}
-
-if ( ! function_exists( 'atlas_contact_format_date' ) ) {
-	/**
-	 * Format a date string into DD MM YYYY.
-	 *
-	 * @param string $date_string Date string to format.
-	 *
-	 * @return string
-	 */
-	function atlas_contact_format_date( $date_string ) {
-		if ( ! $date_string ) {
-			return '';
-		}
-
-		$timestamp = strtotime( (string) $date_string );
-
-		if ( ! $timestamp ) {
-			return (string) $date_string;
-		}
-
-		return date_i18n( 'd m Y', $timestamp );
-	}
-}
 ?>
 
 <!DOCTYPE html>
@@ -145,12 +54,12 @@ if ( ! function_exists( 'atlas_contact_format_date' ) ) {
 							while ( have_posts() ) :
 								the_post();
 
-								$company_id   = get_post_meta( get_the_ID(), 'contact_company_id', true );
-								$company_name = get_post_meta( get_the_ID(), 'contact_company', true );
-								$job_title    = get_field( 'contact_job_title' );
-								$status       = get_post_meta( get_the_ID(), 'contact_status', true );
-								$email        = get_post_meta( get_the_ID(), 'contact_email', true );
-								$last_contact = get_post_meta( get_the_ID(), 'contact_last_contact', true );
+								$company_id   = atlas_get_contact_field( 'contact_company_id' );
+								$company_name = atlas_get_contact_field( 'contact_company' );
+								$job_title    = atlas_get_contact_field( 'contact_job_title' );
+								$status       = atlas_get_contact_field( 'contact_status' );
+								$email        = atlas_get_contact_field( 'contact_email' );
+								$last_contact = atlas_get_contact_field( 'contact_last_contact' );
 								$status_label = $status ? $status : __( 'Active', 'jointswp' );
 								$company      = $company_id ? $company_id : $company_name;
 								$last_contact = $last_contact ? $last_contact : get_the_date( 'Y-m-d' );
