@@ -2,6 +2,108 @@
 get_header();
 ?>
 
+<?php
+$contact_helpers_path = locate_template( 'functions/contact-helpers.php' );
+
+if (
+	( ! function_exists( 'atlas_get_contact_field' ) || ! function_exists( 'atlas_contact_status_classes' ) || ! function_exists( 'atlas_contact_format_date' ) )
+	&& $contact_helpers_path
+) {
+	require_once $contact_helpers_path;
+}
+
+if ( ! function_exists( 'atlas_get_contact_field' ) ) {
+	/**
+	 * Retrieve a contact field value with ACF support and post meta fallback.
+	 *
+	 * @param string   $meta_key Field/meta key.
+	 * @param int|null $post_id  Post ID, defaults to current post.
+	 * @param mixed    $default  Default value when no data is available.
+	 *
+	 * @return mixed
+	 */
+	function atlas_get_contact_field( $meta_key, $post_id = null, $default = '' ) {
+		$post_id = $post_id ? $post_id : get_the_ID();
+
+		$value = null;
+
+		if ( function_exists( 'get_field' ) ) {
+			$value = get_field( $meta_key, $post_id );
+		}
+
+		if ( null === $value || '' === $value ) {
+			$meta_value = get_post_meta( $post_id, $meta_key, true );
+
+			if ( '' !== $meta_value || '0' === $meta_value ) {
+				$value = $meta_value;
+			}
+		}
+
+		if ( null === $value || '' === $value ) {
+			$value = $default;
+		}
+
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
+	/**
+	 * Map contact status labels to Tailwind badge classes.
+	 *
+	 * @param string $status Status label.
+	 *
+	 * @return string
+	 */
+	function atlas_contact_status_classes( $status ) {
+		if ( is_array( $status ) ) {
+			$status = reset( $status );
+		}
+
+		$status = strtolower( (string) $status );
+
+		switch ( $status ) {
+			case 'active':
+				return 'bg-green-100 text-green-800';
+			case 'prospective':
+			case 'prospect':
+				return 'bg-yellow-100 text-yellow-800';
+			case 'inactive':
+				return 'bg-gray-200 text-gray-700';
+			default:
+				return 'bg-blue-100 text-blue-800';
+		}
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_format_date' ) ) {
+	/**
+	 * Format a date string into DD MM YYYY.
+	 *
+	 * @param string $date_string Date string to format.
+	 *
+	 * @return string
+	 */
+	function atlas_contact_format_date( $date_string ) {
+		if ( is_array( $date_string ) ) {
+			$date_string = reset( $date_string );
+		}
+
+		if ( ! $date_string ) {
+			return '';
+		}
+
+		$timestamp = strtotime( (string) $date_string );
+
+		if ( ! $timestamp ) {
+			return (string) $date_string;
+		}
+
+		return date_i18n( 'd m Y', $timestamp );
+	}
+}
+?>
+
 <?php if ( have_posts() ) : ?>
     <?php while ( have_posts() ) : the_post(); ?>
     <?php
