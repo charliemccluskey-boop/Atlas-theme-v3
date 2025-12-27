@@ -75,6 +75,35 @@ if ( ! function_exists( 'atlas_course_format_currency' ) ) {
     }
 }
 
+if ( ! function_exists( 'atlas_course_format_date_display' ) ) {
+    /**
+     * Format the course date into a human-readable display value.
+     *
+     * @param string|int|DateTimeInterface|null $value Raw date value.
+     *
+     * @return string
+     */
+    function atlas_course_format_date_display( $value ) {
+        if ( ! $value ) {
+            return '-';
+        }
+
+        if ( $value instanceof DateTimeInterface ) {
+            $timestamp = $value->getTimestamp();
+        } elseif ( is_numeric( $value ) ) {
+            $timestamp = (int) $value;
+        } else {
+            $timestamp = strtotime( (string) $value );
+        }
+
+        if ( $timestamp ) {
+            return date_i18n( 'j M Y', $timestamp );
+        }
+
+        return (string) $value;
+    }
+}
+
 if ( ! function_exists( 'atlas_course_linked_text' ) ) {
     /**
      * Display a linked value if a matching post ID exists, otherwise plain text.
@@ -192,7 +221,7 @@ if ( ! function_exists( 'atlas_course_linked_text' ) ) {
                                 ?>
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        <a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800"><?php echo esc_html( $course_date ); ?></a>
+                                        <a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800"><?php echo esc_html( atlas_course_format_date_display( $course_date ) ); ?></a>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo esc_attr( atlas_course_status_classes( $status_label ) ); ?>">
