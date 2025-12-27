@@ -39,15 +39,16 @@ if ( ! function_exists( 'atlas_get_contact_field' ) ) {
 }
 
 if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
-    /**
-     * Map contact status labels to Tailwind badge classes.
-     *
-     * @param string $status Status label.
-     *
-     * @return string
-     */
-    function atlas_contact_status_classes( $status ) {
-        $status = strtolower( (string) $status );
+	/**
+	 * Map contact status labels to Tailwind badge classes.
+	 *
+	 * @param string $status Status label.
+	 *
+	 * @return string
+	 */
+	function atlas_contact_status_classes( $status ) {
+		$status = atlas_contact_first_value( $status );
+		$status = strtolower( (string) $status );
 
         switch ( $status ) {
             case 'active':
@@ -64,17 +65,19 @@ if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
 }
 
 if ( ! function_exists( 'atlas_contact_linked_text' ) ) {
-    /**
-     * Display a linked value if a matching post ID exists, otherwise plain text.
-     *
-     * @param string|int $value Value to display.
-     *
-     * @return string
-     */
-    function atlas_contact_linked_text( $value ) {
-        if ( ! $value ) {
-            return '-';
-        }
+	/**
+	 * Display a linked value if a matching post ID exists, otherwise plain text.
+	 *
+	 * @param string|int $value Value to display.
+	 *
+	 * @return string
+	 */
+	function atlas_contact_linked_text( $value ) {
+		$value = atlas_contact_first_value( $value );
+
+		if ( ! $value ) {
+			return '-';
+		}
 
         if ( is_numeric( $value ) ) {
             $label = get_the_title( (int) $value );
@@ -101,9 +104,11 @@ if ( ! function_exists( 'atlas_contact_default_text' ) ) {
      *
      * @return string
      */
-    function atlas_contact_default_text( $value ) {
-        return $value ? esc_html( $value ) : '-';
-    }
+	function atlas_contact_default_text( $value ) {
+		$value = atlas_contact_first_value( $value );
+
+		return $value ? esc_html( $value ) : '-';
+	}
 }
 
 if ( ! function_exists( 'atlas_contact_format_date' ) ) {
@@ -114,9 +119,11 @@ if ( ! function_exists( 'atlas_contact_format_date' ) ) {
      *
      * @return string
      */
-    function atlas_contact_format_date( $date_string ) {
-        if ( ! $date_string ) {
-            return '';
+	function atlas_contact_format_date( $date_string ) {
+		$date_string = atlas_contact_first_value( $date_string );
+
+		if ( ! $date_string ) {
+			return '';
         }
 
         $timestamp = strtotime( (string) $date_string );
@@ -126,5 +133,26 @@ if ( ! function_exists( 'atlas_contact_format_date' ) ) {
         }
 
         return date_i18n( 'd m Y', $timestamp );
-    }
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_first_value' ) ) {
+	/**
+	 * Normalize values that might be arrays or objects to a single scalar.
+	 *
+	 * @param mixed $value Value to normalize.
+	 *
+	 * @return mixed
+	 */
+	function atlas_contact_first_value( $value ) {
+		if ( is_array( $value ) ) {
+			$value = reset( $value );
+		}
+
+		if ( $value instanceof WP_Post ) {
+			return $value->ID;
+		}
+
+		return $value;
+	}
 }
