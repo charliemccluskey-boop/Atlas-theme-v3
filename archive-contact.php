@@ -124,7 +124,7 @@ if ( ! function_exists( 'atlas_contact_default_text' ) ) {
 
 								$company_id   = get_post_meta( get_the_ID(), 'contact_company_id', true );
 								$company_name = get_post_meta( get_the_ID(), 'contact_company', true );
-								$job_title    = get_post_meta( get_the_ID(), 'contact_job_title', true );
+								$job_title    = get_field( 'contact_job_title' );
 								$status       = get_post_meta( get_the_ID(), 'contact_status', true );
 								$email        = get_post_meta( get_the_ID(), 'contact_email', true );
 								$last_contact = get_post_meta( get_the_ID(), 'contact_last_contact', true );
