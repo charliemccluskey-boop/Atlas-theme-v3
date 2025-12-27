@@ -2,68 +2,18 @@
 get_header();
 ?>
 
-<?php
-if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
-	/**
-	 * Map contact status labels to Tailwind badge classes.
-	 *
-	 * @param string $status Status label.
-	 *
-	 * @return string
-	 */
-	function atlas_contact_status_classes( $status ) {
-		$status = strtolower( (string) $status );
-
-		switch ( $status ) {
-			case 'active':
-				return 'bg-green-100 text-green-800';
-			case 'prospective':
-			case 'prospect':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'inactive':
-				return 'bg-gray-200 text-gray-700';
-			default:
-				return 'bg-blue-100 text-blue-800';
-		}
-	}
-}
-
-if ( ! function_exists( 'atlas_contact_format_date' ) ) {
-	/**
-	 * Format a date string into DD MM YYYY.
-	 *
-	 * @param string $date_string Date string to format.
-	 *
-	 * @return string
-	 */
-	function atlas_contact_format_date( $date_string ) {
-		if ( ! $date_string ) {
-			return '';
-		}
-
-		$timestamp = strtotime( (string) $date_string );
-
-		if ( ! $timestamp ) {
-			return (string) $date_string;
-		}
-
-		return date_i18n( 'd m Y', $timestamp );
-	}
-}
-?>
-
 <?php if ( have_posts() ) : ?>
     <?php while ( have_posts() ) : the_post(); ?>
     <?php
-		$company_id   = get_field( 'contact_company_id' );
-		$company_name = get_field( 'contact_company' );
-		$job_title    = get_field( 'contact_job_title' );
-		$status       = get_field( 'contact_status' );
-		$email        = get_field( 'contact_email' );
-		$phone        = get_field( 'contact_phone' );
-		$mobile       = get_field( 'contact_mobile' );
-		$last_contact = get_field( 'contact_last_contact' );
-		$notes        = get_field( 'contact_notes' );
+		$company_id   = atlas_get_contact_field( 'contact_company_id' );
+		$company_name = atlas_get_contact_field( 'contact_company' );
+		$job_title    = atlas_get_contact_field( 'contact_job_title' );
+		$status       = atlas_get_contact_field( 'contact_status' );
+		$email        = atlas_get_contact_field( 'contact_email' );
+		$phone        = atlas_get_contact_field( 'contact_phone' );
+		$mobile       = atlas_get_contact_field( 'contact_mobile' );
+		$last_contact = atlas_get_contact_field( 'contact_last_contact' );
+		$notes        = atlas_get_contact_field( 'contact_notes' );
 
 		$status_label = $status ? $status : __( 'Active', 'atlas-theme' );
 	?>
