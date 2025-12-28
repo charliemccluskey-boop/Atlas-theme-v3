@@ -122,21 +122,21 @@ if ( ! function_exists( 'atlas_contact_default_text' ) ) {
 							while ( have_posts() ) :
 								the_post();
 
-								$company_id   = get_post_meta( get_the_ID(), 'contact_company_id', true );
-								$company_name = get_post_meta( get_the_ID(), 'contact_company', true );
-								$job_title    = get_post_meta( get_the_ID(), 'contact_job_title', true );
-								$status       = get_post_meta( get_the_ID(), 'contact_status', true );
-								$email        = get_post_meta( get_the_ID(), 'contact_email', true );
-								$last_contact = get_post_meta( get_the_ID(), 'contact_last_contact', true );
-								$status_label = $status ? $status : __( 'Active', 'jointswp' );
-								$company      = $company_id ? $company_id : $company_name;
-								$last_contact = $last_contact ? $last_contact : get_the_date( 'Y-m-d' );
+								$company      = get_field( 'contact_company' );
+								$job_title    = get_field( 'contact_job_title' );
+								$email        = get_field( 'email' );
+								$last_contact = get_field( 'last_contacted_date' );
+
+								$company_display = $company instanceof WP_Post ? $company : ( $company ?: '' );
+
+								$status_object = get_post_status_object( get_post_status() );
+								$status_label  = $status_object ? $status_object->label : __( 'Unknown', 'atlas-theme' );
 								?>
 								<tr class="hover:bg-gray-50">
 									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 										<a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800"><?php the_title(); ?></a>
 									</td>
-									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_contact_linked_text( $company ); ?></td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_contact_linked_text( $company_display ); ?></td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_contact_default_text( $job_title ); ?></td>
 									<td class="px-6 py-4 whitespace-nowrap">
 										<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo esc_attr( atlas_contact_status_classes( $status_label ) ); ?>">
@@ -150,7 +150,9 @@ if ( ! function_exists( 'atlas_contact_default_text' ) ) {
 											-
 										<?php endif; ?>
 									</td>
-									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo atlas_contact_default_text( $last_contact ); ?></td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+										<?php echo atlas_contact_default_text( $last_contact ); ?>
+									</td>
 								</tr>
 							<?php endwhile; ?>
 						<?php else : ?>
