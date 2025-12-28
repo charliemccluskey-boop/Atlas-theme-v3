@@ -37,7 +37,7 @@ get_header();
                         <div class="flex items-center mt-2 space-x-4">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                                 <i data-feather="user" class="w-3 h-3 mr-1"></i>
-                                Primary Contact
+                                Contact
                             </span>
                             <span class="text-gray-600">ID <?php echo esc_html( get_the_ID() ); ?></span>
                         </div>
