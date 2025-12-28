@@ -149,10 +149,14 @@ if ( ! function_exists( 'atlas_contact_first_value' ) ) {
 			$value = reset( $value );
 		}
 
-		if ( $value instanceof WP_Post ) {
-			return $value->ID;
-		}
+        if ( $value instanceof WP_Post ) {
+            return $value->ID;
+        }
 
-		return $value;
+        if ( $value instanceof WP_Term ) {
+            return $value->slug ? $value->slug : $value->name;
+        }
+
+        return $value;
 	}
 }
