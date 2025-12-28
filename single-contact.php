@@ -3,25 +3,37 @@ get_header();
 ?>
 
 <?php
-$contact_helpers_path = locate_template( 'functions/contact-helpers.php' );
+$contact_helper_paths = array(
+	trailingslashit( get_stylesheet_directory() ) . 'functions/contact-helpers.php',
+	trailingslashit( get_template_directory() ) . 'functions/contact-helpers.php',
+);
 
-if (
-	( ! function_exists( 'atlas_get_contact_field' ) || ! function_exists( 'atlas_contact_status_classes' ) || ! function_exists( 'atlas_contact_format_date' ) )
-	&& $contact_helpers_path
-) {
-	require_once $contact_helpers_path;
+foreach ( $contact_helper_paths as $contact_helper_path ) {
+	if ( file_exists( $contact_helper_path ) ) {
+		require_once $contact_helper_path;
+		break;
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_first_value' ) ) {
+	function atlas_contact_first_value( $value ) {
+		if ( is_array( $value ) ) {
+			$value = reset( $value );
+		}
+
+		if ( $value instanceof WP_Post ) {
+			return $value->ID;
+		}
+
+		if ( $value instanceof WP_Term ) {
+			return $value->slug ? $value->slug : $value->name;
+		}
+
+		return $value;
+	}
 }
 
 if ( ! function_exists( 'atlas_get_contact_field' ) ) {
-	/**
-	 * Retrieve a contact field value with ACF support and post meta fallback.
-	 *
-	 * @param string   $meta_key Field/meta key.
-	 * @param int|null $post_id  Post ID, defaults to current post.
-	 * @param mixed    $default  Default value when no data is available.
-	 *
-	 * @return mixed
-	 */
 	function atlas_get_contact_field( $meta_key, $post_id = null, $default = '' ) {
 		$post_id = $post_id ? $post_id : get_the_ID();
 
@@ -48,18 +60,8 @@ if ( ! function_exists( 'atlas_get_contact_field' ) ) {
 }
 
 if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
-	/**
-	 * Map contact status labels to Tailwind badge classes.
-	 *
-	 * @param string $status Status label.
-	 *
-	 * @return string
-	 */
 	function atlas_contact_status_classes( $status ) {
-		if ( is_array( $status ) ) {
-			$status = reset( $status );
-		}
-
+		$status = atlas_contact_first_value( $status );
 		$status = strtolower( (string) $status );
 
 		switch ( $status ) {
@@ -77,17 +79,8 @@ if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
 }
 
 if ( ! function_exists( 'atlas_contact_format_date' ) ) {
-	/**
-	 * Format a date string into DD MM YYYY.
-	 *
-	 * @param string $date_string Date string to format.
-	 *
-	 * @return string
-	 */
 	function atlas_contact_format_date( $date_string ) {
-		if ( is_array( $date_string ) ) {
-			$date_string = reset( $date_string );
-		}
+		$date_string = atlas_contact_first_value( $date_string );
 
 		if ( ! $date_string ) {
 			return '';
