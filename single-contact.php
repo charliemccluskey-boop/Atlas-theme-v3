@@ -3,10 +3,97 @@ get_header();
 ?>
 
 <?php
-$contact_helpers_path = locate_template( 'functions/contact-helpers.php' );
+$contact_helper_paths = array(
+	trailingslashit( get_stylesheet_directory() ) . 'functions/contact-helpers.php',
+	trailingslashit( get_template_directory() ) . 'functions/contact-helpers.php',
+);
 
-if ( $contact_helpers_path ) {
-	require_once $contact_helpers_path;
+foreach ( $contact_helper_paths as $contact_helper_path ) {
+	if ( file_exists( $contact_helper_path ) ) {
+		require_once $contact_helper_path;
+		break;
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_first_value' ) ) {
+	function atlas_contact_first_value( $value ) {
+		if ( is_array( $value ) ) {
+			$value = reset( $value );
+		}
+
+		if ( $value instanceof WP_Post ) {
+			return $value->ID;
+		}
+
+		if ( $value instanceof WP_Term ) {
+			return $value->slug ? $value->slug : $value->name;
+		}
+
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'atlas_get_contact_field' ) ) {
+	function atlas_get_contact_field( $meta_key, $post_id = null, $default = '' ) {
+		$post_id = $post_id ? $post_id : get_the_ID();
+
+		$value = null;
+
+		if ( function_exists( 'get_field' ) ) {
+			$value = get_field( $meta_key, $post_id );
+		}
+
+		if ( null === $value || '' === $value ) {
+			$meta_value = get_post_meta( $post_id, $meta_key, true );
+
+			if ( '' !== $meta_value || '0' === $meta_value ) {
+				$value = $meta_value;
+			}
+		}
+
+		if ( null === $value || '' === $value ) {
+			$value = $default;
+		}
+
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_status_classes' ) ) {
+	function atlas_contact_status_classes( $status ) {
+		$status = atlas_contact_first_value( $status );
+		$status = strtolower( (string) $status );
+
+		switch ( $status ) {
+			case 'active':
+				return 'bg-green-100 text-green-800';
+			case 'prospective':
+			case 'prospect':
+				return 'bg-yellow-100 text-yellow-800';
+			case 'inactive':
+				return 'bg-gray-200 text-gray-700';
+			default:
+				return 'bg-blue-100 text-blue-800';
+		}
+	}
+}
+
+if ( ! function_exists( 'atlas_contact_format_date' ) ) {
+	function atlas_contact_format_date( $date_string ) {
+		$date_string = atlas_contact_first_value( $date_string );
+
+		if ( ! $date_string ) {
+			return '';
+		}
+
+		$timestamp = strtotime( (string) $date_string );
+
+		if ( ! $timestamp ) {
+			return (string) $date_string;
+		}
+
+		return date_i18n( 'd m Y', $timestamp );
+	}
 }
 ?>
 
